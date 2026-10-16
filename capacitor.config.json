@@ -1,0 +1,10 @@
+{
+  "appId": "com.deliveryosapp.client",
+  "appName": "DeliveryOS",
+  "webDir": "www",
+  "server": {
+    "url": "https://deliveryosapp.com/stores",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}
