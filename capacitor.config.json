@@ -5,6 +5,14 @@
   "server": {
     "url": "https://deliveryosapp.com/stores",
     "androidScheme": "https",
-    "cleartext": false
+    "cleartext": false,
+    "allowNavigation": [
+      "*.pagoplux.com",
+      "*.cardinalcommerce.com"
+    ]
+  },
+  "ios": {
+    "contentInset": "never",
+    "appendUserAgent": "DeliveryOSClient/ios-1"
   }
 }
