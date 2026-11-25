@@ -11,6 +11,11 @@
       "*.cardinalcommerce.com"
     ]
   },
+  "plugins": {
+    "App": {
+      "disableBackButtonHandler": true
+    }
+  },
   "ios": {
     "contentInset": "never",
     "appendUserAgent": "DeliveryOSClient/ios-1"
