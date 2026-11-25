@@ -38,4 +38,14 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Ubicacion para la direccion de entrega, solo mientras la app esta en pantalla (sin segundo plano).
+         Capacitor pide estos dos permisos cuando la tienda llama a navigator.geolocation; sin declararlos
+         Android los niega sin preguntar. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- La ubicacion no es obligatoria (se puede escribir la direccion): Play no oculta la app a equipos sin GPS -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>
