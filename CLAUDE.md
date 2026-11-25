@@ -31,6 +31,16 @@ cd android && ./gradlew.bat assembleDebug --no-daemon     # APK en android/app/b
 ```
 En un equipo nuevo falta `android/local.properties`: `sdk.dir=C:/Users/<usuario>/AppData/Local/Android/Sdk`. Entorno completo (JDK 21 con jlink, SDK 36, sdkmanager) en el CLAUDE.md de `deliveryos`, seccion "Compilacion de las apps". Firebase: `android/app/google-services.json` (proyecto "deliveryosapp").
 
+## Firma de lanzamiento para Google Play (paso M17, 2026-11-24)
+- Play pide un `.aab` firmado; un APK de depuracion no sirve. Con Play App Signing la llave nuestra es la **llave de subida** (la definitiva la guarda Google).
+- **Una sola llave para las tres apps**: `C:\Users\jairo\DeliveryOS-firma-android\deliveryos-subida.jks` (alias `upload`, RSA 4096, valida hasta 2054), FUERA de todo repositorio. La contraseña la eligio el dueño y no esta en ningun archivo: nunca pedirla en el chat ni pasarla escrita en un comando. Huella SHA-256 del certificado (publica): `4D:90:1C:FC:2F:58:7E:5D:E1:2E:7C:26:58:7D:4F:8A:CB:87:23:0C:14:A8:DE:36:B7:43:00:08:20:B0:B4:2C`.
+- `build.gradle` no tiene `signingConfig` a proposito: se compila sin firmar y firma `C:\Users\jairo\DeliveryOS-firma-android\firmar.ps1`, que ejecuta **el dueño** (pide la contraseña en su terminal y la borra al terminar). Al lado hay un `LEEME.txt`.
+- Version nueva: subir `versionCode` (Play no acepta dos veces el mismo) y `versionName` en `android/app/build.gradle` (y el numero de `appendUserAgent` si la app lo usa), `npx cap sync android`, `cd android && ./gradlew.bat clean bundleRelease --no-daemon`, y el dueño ejecuta `firmar.ps1`. El programa firma las TRES apps a la vez: las tres deben estar compiladas. Salen en `C:\Users\jairo\Documents\DeliveryOS-AAB\` junto con `verificacion-de-firma.txt`.
+- `clean` borra `android/app/build`: antes, copiar cualquier APK que se quiera conservar.
+- Primer paquete firmado (2026-11-24): `DeliveryOS-Cliente-1.1-codigo2.aab`. Revisado por dentro: paquete, version, API 36, no es de depuracion, abre la direccion correcta sin `?bypass` y esta firmado con la llave nueva. **No probado en un telefono**. Subirlo a Play Console lo hace el dueño.
+- Un telefono con el APK de depuracion instalado debe **desinstalarlo** antes de instalar la app desde Play (la firma es distinta).
+- `server.allowNavigation` entra en este paquete y **nunca se probo en un telefono**: antes de publicar, probar el pago con tarjeta con verificacion del banco (3DS) y que regrese a la app.
+
 ## Flujo de trabajo
 Documenta aqui todo cambio nativo. Commits en espanol, primera linea maximo 72 caracteres.
 
