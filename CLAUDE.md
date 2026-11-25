@@ -9,10 +9,19 @@ Hasta el 2026-11-22 esta app estuvo bloqueada a proposito: con `COMING_SOON=1` e
 
 ## Permisos de ubicacion (2026-11-25)
 - **Falla**: «Usar mi ubicacion actual» decia «Permiso de ubicacion denegado» sin preguntar nada. La app 1.1 (codigo 2, APK y AAB) no declaraba ningun permiso de ubicacion. `BridgeWebChromeClient.onGeolocationPermissionsShowPrompt` de Capacitor ya pide `ACCESS_COARSE_LOCATION` y `ACCESS_FINE_LOCATION`, pero Android niega sin preguntar lo que el manifest no declara.
-- **Arreglo** (`AndroidManifest.xml`): los dos permisos (solo con la app en pantalla, sin segundo plano) y `uses-feature` de ubicacion con `required="false"` para que Play no oculte la app a equipos sin GPS. Verificado con `aapt2 dump permissions` y `dump badging`. **Pendiente de probar en BlueStacks** (la opcion de depuracion ADB estaba apagada: `bst.enable_adb_access="0"`).
+- **Arreglo** (`AndroidManifest.xml`): los dos permisos (solo con la app en pantalla, sin segundo plano) y `uses-feature` de ubicacion con `required="false"` para que Play no oculte la app a equipos sin GPS. Verificado con `aapt2 dump permissions` y `dump badging`. **Probado en BlueStacks** (2026-11-25): Android pregunta, y negar o permitir funciona. Ojo: con la web de hoy el boton puede no llenar la direccion aunque se permita (pide la ubicacion aproximada, que en BlueStacks y en telefonos sin la «precision de la ubicacion» de Google no responde); lo arregla el cambio web `_gpsDireccion` (commit `084e836` del repo `deliveryos`, sin desplegar).
 - **Al subirlo a Play**: la app ahora pide ubicacion, asi que el formulario «Seguridad de los datos» debe declarar ubicacion aproximada y precisa (opcional, para el funcionamiento de la app).
 - El AAB de codigo 2 **no debe enviarse a revision**.
 - La web (repo `deliveryos`) tiene un cambio aparte, sin desplegar: aviso claro cuando se niega el permiso, visible tambien dentro de los mapas, y en la app no se pide el GPS apenas se abre.
+
+## Google y Facebook dentro de la app (2026-11-25, opcion A decidida por el dueno)
+- **Falla**: «Continuar con Google/Facebook» abria el navegador del telefono y la sesion se quedaba alla.
+- **Parte de Android (commit `5cf4bb7`)**: enlace propio `com.deliveryosapp.client://oauth` (segundo `intent-filter` de `MainActivity`, que es `singleTask`; en iOS `CFBundleURLTypes`), `@capacitor/app` y `@capacitor/browser`, y `plugins.App.disableBackButtonHandler: true` (sin eso el plugin App cambiaria el boton atras).
+- **Probado en BlueStacks**: el enlace llega con la app abierta (sin recargar) y cerrada; `Capacitor.Plugins.Browser.open` abre Chrome encima de la app y se vuelve con un boton o solo; la pestana se cierra sola al volver.
+- **Trampas**: tras recargar la pagina `App.getLaunchUrl()` sigue devolviendo el enlace viejo, y con la app cerrada el enlace llega por `getLaunchUrl` Y por `appUrlOpen`: la web debe usarlo una sola vez.
+- **Falta la parte web** (repo `deliveryos`): ver la seccion «App Android del cliente: ubicacion y Google dentro de la app» de su CLAUDE.md. La app 1.1 (codigo 2) instalada no tiene estas librerias: la web debe pedirle que actualice.
+- Subir `versionCode` a 3 cuando la parte web este probada.
+- **Probar el codigo web sin desplegar**: APK temporal con `server.url` a `http://127.0.0.1:<puerto>/stores`, `cleartext` y `usesCleartextTraffic`, mas `adb reverse`; despues `git status` debe quedar limpio y se reinstala el APK que apunta a produccion.
 
 ## Icono, nombre y pantalla de carga (2026-11-24)
 - **Nombre visible**: `DeliveryOS` (`res/values/strings.xml`: `app_name` y `title_activity_main`; `appName` de `capacitor.config.json`).
