@@ -1,7 +1,7 @@
 # DeliveryOS Client (app Android del cliente)
 
 ## Que es
-Shell de Capacitor que carga el marketplace en vivo: `server.url` = `https://deliveryosapp.com/stores` (`capacitor.config.json`). Paquete `com.deliveryosapp.client`, repo `github.com/JhonToledo/deliveryos-client`. Version actual: `versionCode 2` / `1.1` (nombre visible **DeliveryOS**, con el logo propio; ver "Icono, nombre y pantalla de carga").
+Shell de Capacitor que carga el marketplace en vivo: `server.url` = `https://deliveryosapp.com/stores` (`capacitor.config.json`). Paquete `com.deliveryosapp.client`, repo `github.com/JhonToledo/deliveryos-client`. Version actual: `versionCode 3` / `1.2` (nombre visible **DeliveryOS**, con el logo propio; ver "Icono, nombre y pantalla de carga").
 **Toda la UI vive en el backend** (repo `deliveryos`, `templates/client/stores.html`, `track.html`, `account.html`). Cambios de HTML/CSS/JS/backend NO requieren recompilar. Lee primero el `CLAUDE.md` del repo `deliveryos` (reglas generales, dark mode, paleta, sin guion largo).
 
 ## ESTADO: la tienda ya esta abierta (2026-11-23), la app funciona
@@ -19,8 +19,9 @@ Hasta el 2026-11-22 esta app estuvo bloqueada a proposito: con `COMING_SOON=1` e
 - **Parte de Android (commit `5cf4bb7`)**: enlace propio `com.deliveryosapp.client://oauth` (segundo `intent-filter` de `MainActivity`, que es `singleTask`; en iOS `CFBundleURLTypes`), `@capacitor/app` y `@capacitor/browser`, y `plugins.App.disableBackButtonHandler: true` (sin eso el plugin App cambiaria el boton atras).
 - **Probado en BlueStacks**: el enlace llega con la app abierta (sin recargar) y cerrada; `Capacitor.Plugins.Browser.open` abre Chrome encima de la app y se vuelve con un boton o solo; la pestana se cierra sola al volver.
 - **Trampas**: tras recargar la pagina `App.getLaunchUrl()` sigue devolviendo el enlace viejo, y con la app cerrada el enlace llega por `getLaunchUrl` Y por `appUrlOpen`: la web debe usarlo una sola vez.
-- **Falta la parte web** (repo `deliveryos`): ver la seccion «App Android del cliente: ubicacion y Google dentro de la app» de su CLAUDE.md. La app 1.1 (codigo 2) instalada no tiene estas librerias: la web debe pedirle que actualice.
-- Subir `versionCode` a 3 cuando la parte web este probada.
+- **Parte web HECHA y probada** (repo `deliveryos`, commit `727fdda` sobre el ingreso asegurado `11cbb47`; **sin subir ni desplegar**): ver la seccion «App Android del cliente: ubicacion y Google dentro de la app» de su CLAUDE.md. La app abre `/auth/<proveedor>?app=<huella de una clave secreta>`, el navegador no recibe la sesion y vuelve con un codigo de un solo uso que solo sirve con esa clave. **El regreso va como `intent://oauth?...;package=com.deliveryosapp.client;end`** para que Android se lo entregue solo a nuestra app (no cambiar por el enlace propio simple: otra app podria registrar el mismo). La app 1.1 (codigo 2) no tiene estas librerias: la web le pide actualizar. En iPhone queda apagado hasta tener Universal Links.
+- **Probado en BlueStacks (2026-11-25) con la web nueva y un Google de prueba**: vuelve sola en menos de 1 segundo con la sesion iniciada; «Cancelar» vuelve con aviso y sin sesion; con la app cerrada entra de cero con un solo canje; un regreso dirigido a otro paquete no abre nuestra app. Facebook y las cuentas reales no se probaron.
+- **Paquete codigo 3 (1.2)**: compilado sin firmar (`bundleRelease`, revisado por dentro) y APK de depuracion en `deliveryos/apk/DeliveryOS-Client-1.2-codigo3-debug.apk`. Falta que el dueño ejecute `firmar.ps1`. **No sirve para Google ni para la ubicacion hasta que se despliegue la web.**
 - **Probar el codigo web sin desplegar**: APK temporal con `server.url` a `http://127.0.0.1:<puerto>/stores`, `cleartext` y `usesCleartextTraffic`, mas `adb reverse`; despues `git status` debe quedar limpio y se reinstala el APK que apunta a produccion.
 
 ## Icono, nombre y pantalla de carga (2026-11-24)
@@ -82,6 +83,6 @@ Documenta aqui todo cambio nativo. Commits en espanol, primera linea maximo 72 c
 
 **Riesgos propios de esta app (bloquean la App Store si no se resuelven)**:
 - **Guía 4.8 (Sign in with Apple)**: el sitio ofrece entrar con Google y Facebook, así que Apple exige ofrecer también «Iniciar sesión con Apple». No existe en el sitio.
-- **Google y Facebook no funcionan dentro de un WebView**: Google rechaza el inicio de sesión embebido (`disallowed_useragent`) y el inicio de sesión del sitio abre una ventana emergente (`window.open`) que el WebView no maneja. Habría que abrir el OAuth con el navegador del sistema (ASWebAuthenticationSession) o dejar solo correo y cédula en la app. Esto afecta igual a la app de Android del cliente (nunca se probó).
+- **Google y Facebook dentro de la app de iPhone**: en Android ya se resolvió abriendo el navegador del teléfono (ver «Google y Facebook dentro de la app»). En iPhone no hay `intent://`: la web lo deja apagado («Entra con tu correo») hasta tener Universal Links (`apple-app-site-association` en el sitio y la capacidad de dominios asociados en la app).
 - **Guía 4.2**: la app es un envoltorio del sitio; pesa a favor que tendrá notificaciones nativas, pero **hoy la app del cliente no tiene push**: `Customer` no tiene `fcm_token` ni existe `POST /api/customer/fcm-token` (ver «Que aporta lo nativo»).
-- **Guía 5.1.1(v)**: hay que poder eliminar la cuenta dentro de la app (hoy no existe esa opción).
+- **Guía 5.1.1(v)**: hay que poder eliminar la cuenta dentro de la app (el sitio ya la tiene desde el 2026-11-24; falta probarlo en un teléfono).
